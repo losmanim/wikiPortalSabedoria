@@ -1,0 +1,28 @@
+# Config
+config/app.php
+
+# Sensitive / logs
+logs/
+*.log
+
+# Sessões PHP
+/tmp/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Uploads (mantém estrutura)
+uploads/*
+!uploads/.gitkeep
+
+# Multimidia (grandes demais para git)
+multimidia/

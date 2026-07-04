@@ -1,0 +1,43 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /wikiPortalSabedoria/
+
+    # Remove trailing slash
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Redirecionar artigo/slug para artigo.php?slug=slug
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^artigo/([^/]+)$ artigo.php?slug=$1 [L,QSA]
+
+    # Redirecionar categoria/slug para categoria.php?slug=slug
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^categoria/([^/]+)$ categoria.php?slug=$1 [L,QSA]
+
+    # Redirecionar pagina/slug para pagina.php?slug=slug
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^pagina/([^/]+)$ pagina.php?slug=$1 [L,QSA]
+
+    # Redirecionar busca/termo para busca.php?q=termo
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^busca/([^/]+)$ busca.php?q=$1 [L,QSA]
+
+    # Redirecionar admin/* para admin/index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^admin/(.*)$ admin/index.php [L,QSA]
+</IfModule>
+
+# Proteger arquivos sensíveis
+<FilesMatch "^(config|\.env|\.gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevenir listagem de diretórios
+Options -Indexes
