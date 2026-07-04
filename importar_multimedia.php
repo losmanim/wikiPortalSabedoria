@@ -1,31 +1,24 @@
 <?php
-/**
- * Importador de Conteúdo Multimídia Gnóstico
- * Importa arquivos de áudio e vídeo como artigos no portal
- */
 
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/includes/Database.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/Cloudinary.php';
 
 $db = Database::getInstance();
+$cloud = Cloudinary::getInstance();
 
-// Mapeamento de categorias por diretório
-$categoryMap = [
-    'audios-lz/01_gnose-esoterismo' => 'gnose-esoterismo',
-    'audios-lz/02_cristianismo-esoterico' => 'cristianismo-esoterico',
-    'audios-lz/03_hermetismo-teosofia' => 'hermetismo-teosofia',
-    'audios-lz/04_consciencia-meditacao' => 'consciencia-meditacao',
-    'audios-lz/05_corpo-regeneracao' => 'corpo-regeneracao',
-    'audios-lz/06_musica-sons' => 'musica-sons',
-    'videos-lz/01_frequencias-curacao' => 'frequencias-cura',
-    'videos-lz/02_filosofia-consciencia' => 'filosofia-consciencia',
-    'videos-lz/03_historia-cultura' => 'historia-cultura',
-    'videos-lz/04_momentos-pessoais' => 'momentos-pessoais',
-    'videos-lz/05_animes' => 'animes-animacoes',
+$folderCategoryMap = [
+    '01_gnose-esoterismo' => 'gnose-esoterismo',
+    '02_cristianismo-esoterico' => 'cristianismo-esoterico',
+    '02_filosofia-consciencia' => 'filosofia-consciencia',
+    '03_hermetismo-teosofia' => 'hermetismo-teosofia',
+    '04_consciencia-meditacao' => 'consciencia-meditacao',
+    '05_animes' => 'animes-animacoes',
+    '05_corpo-regeneracao' => 'corpo-regeneracao',
+    '06_musica-sons' => 'musica-sons',
 ];
 
-// Função para gerar slug
 function generateSlug($title) {
     $slug = strtolower($title);
     $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
@@ -34,76 +27,73 @@ function generateSlug($title) {
     return $slug;
 }
 
-// Função para limpar título
 function cleanTitle($filename) {
-    $title = pathinfo($filename, PATHINFO_FILENAME);
-    $title = preg_replace('/^\d+[_\s-]?/', '', $title); // Remove número inicial
-    $title = str_replace(['_', '-'], ' ', $title);
-    $title = preg_replace('/\.(mp3|mp4|mkv)$/i', '', $title);
+    $publicId = pathinfo($filename, PATHINFO_FILENAME);
+    $publicId = preg_replace('/_[a-z0-9]{6,}$/', '', $publicId);
+    $title = str_replace(['_', '-'], ' ', $publicId);
+    $title = preg_replace('/^\d+\s*/', '', $title);
     return $title;
 }
 
-// Importar arquivos
 $imported = 0;
 $skipped = 0;
 
-foreach ($categoryMap as $dir => $slug) {
-    $fullPath = __DIR__ . '/multimidia/' . $dir;
-    
-    if (!is_dir($fullPath)) {
+foreach ($folderCategoryMap as $folder => $catSlug) {
+    $resources = $cloud->listResources($folder);
+
+    if (empty($resources)) {
+        echo "Pasta vazia ou não encontrada: $folder\n";
         continue;
     }
-    
-    // Obter categoria ID
-    $categoria = $db->fetch('SELECT id FROM categorias WHERE slug = ?', [$slug]);
+
+    $categoria = $db->fetch('SELECT id FROM categorias WHERE slug = ?', [$catSlug]);
     if (!$categoria) {
-        echo "Categoria não encontrada: $slug\n";
+        echo "Categoria não encontrada: $catSlug\n";
         continue;
     }
-    
+
     $categoriaId = $categoria['id'];
-    
-    // Listar arquivos
-    $files = glob($fullPath . '/*.{mp3,mp4,mkv}', GLOB_BRACE);
-    
-    foreach ($files as $file) {
-        $filename = basename($file);
-        $title = cleanTitle($filename);
+
+    foreach ($resources as $resource) {
+        $publicId = $cloud->getPublicId($resource);
+        $title = cleanTitle($publicId);
         $slug = generateSlug($title);
-        
-        // Verificar se já existe
+        $mediaUrl = $cloud->getUrl($resource);
+        $resourceType = $cloud->getResourceType($resource);
+        $mediaType = $resourceType === 'video' ? 'video' : 'audio';
+
         $existing = $db->fetch('SELECT id FROM artigos WHERE slug = ?', [$slug]);
         if ($existing) {
             $skipped++;
             continue;
         }
-        
-        // Determinar tipo de mídia
-        $extension = pathinfo($file, PATHINFO_EXTENSION);
-        $mediaType = in_array($extension, ['mp3']) ? 'audio' : 'video';
-        
-        // Criar artigo
+
+        $playerHtml = $mediaType === 'video'
+            ? '<video controls style="width:100%;max-width:720px;border-radius:8px"><source src="' . esc($mediaUrl) . '" type="video/mp4"></video>'
+            : '<audio controls style="width:100%"><source src="' . esc($mediaUrl) . '" type="audio/mpeg"></audio>';
+
         $conteudo = "<p>Conteúdo multimídia de <strong>$mediaType</strong> disponível na biblioteca.</p>";
-        $conteudo .= "<p><em>Arquivo: " . esc($filename) . "</em></p>";
-        
-        $tags = implode(', ', [$slug, $mediaType, 'multimidia']);
-        
+        $conteudo .= "<p>$playerHtml</p>";
+        $conteudo .= '<p><a href="' . esc($mediaUrl) . '" target="_blank" rel="noopener">📥 Baixar / Abrir</a></p>';
+
+        $tags = implode(', ', [$slug, $mediaType, 'multimidia', $catSlug]);
+
         $db->insert('artigos', [
             'categoria_id' => $categoriaId,
-            'autor_id' => 1, // Admin
+            'autor_id' => 1,
             'titulo' => $title,
             'slug' => $slug,
             'resumo' => "Conteúdo de $mediaType: " . substr($title, 0, 150),
             'conteudo' => $conteudo,
             'tags' => $tags,
-            'fonte' => 'multimidia/' . $dir,
+            'fonte' => $mediaUrl,
             'status' => 'publicado',
             'publicado_em' => date('Y-m-d H:i:s'),
             'atualizado_em' => date('Y-m-d H:i:s')
         ]);
-        
+
         $imported++;
-        echo "Importado: $title\n";
+        echo "Importado: $title ($mediaType)\n";
     }
 }
 
