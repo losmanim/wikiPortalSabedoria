@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `revisoes` (
   `comentario_geral` TEXT      DEFAULT NULL,
   `pontos_fortes` TEXT         DEFAULT NULL,
   `pontos_fracos` TEXT         DEFAULT NULL,
-  'sugestoes' TEXT             DEFAULT NULL,
+  `sugestoes` TEXT             DEFAULT NULL,
   `versao_analisada` INT       DEFAULT NULL,
   `criado_em`    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
