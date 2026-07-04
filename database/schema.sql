@@ -1,13 +1,9 @@
 -- =============================================
 -- Portal Saberes Ancestrais - Wiki CMS
 -- =============================================
-
-CREATE DATABASE IF NOT EXISTS `portal_saberes`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE `portal_saberes`;
-
+-- ATENÇÃO: Crie o database manualmente no seu
+-- hosting antes de executar este script.
+-- Ex: CREATE DATABASE portal_saberes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- =============================================
 -- USUÁRIOS
 -- =============================================

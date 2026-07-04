@@ -46,13 +46,17 @@ InfinityFree é um serviço de hospedagem **100% gratuito** que suporta PHP e My
 3. Clique na aba **"SQL"**
 4. Agora importe os arquivos na **ordem correta**:
 
+### Antes de começar: selecione o banco
+
+No phpMyAdmin, clique no nome do banco (ex: `if0_42337914_portal_saberes`) no painel esquerdo antes de colar os SQLs. Assim os comandos rodam **dentro** do banco correto.
+
 ### Ordem de importação
 
 Abra cada arquivo `.sql` da pasta `database/` do seu projeto e cole no phpMyAdmin, um por um:
 
 | Ordem | Arquivo | O que faz |
 |-------|---------|-----------|
-| 1º | `database/schema.sql` | Cria as 8 tabelas principais (artigos, usuarios, categorias, etc.) |
+| 1º | `database/schema.sql` | Cria as 8 tabelas principais + admin + config iniciais |
 | 2º | `database/gnostic_categories.sql` | Insere as categorias gnósticas |
 | 3º | `database/quotes_schema.sql` | Cria tabela de citações |
 | 4º | `database/references_schema.sql` | Cria tabela de referências |
@@ -63,9 +67,10 @@ Abra cada arquivo `.sql` da pasta `database/` do seu projeto e cole no phpMyAdmi
 **Como fazer:** Para cada arquivo:
 1. Abra o arquivo `.sql` no bloco de notas
 2. Copie TODO o conteúdo (`Ctrl+A` → `Ctrl+C`)
-3. No phpMyAdmin, cole na caixa de texto da aba SQL (`Ctrl+V`)
-4. Clique em **"Go"** (Executar)
-5. Repita para o próximo arquivo
+3. No phpMyAdmin, **certifique-se de que o banco está selecionado** no painel esquerdo
+4. Cole na caixa de texto da aba SQL (`Ctrl+V`)
+5. Clique em **"Go"** (Executar)
+6. Repita para o próximo arquivo
 
 ---
 

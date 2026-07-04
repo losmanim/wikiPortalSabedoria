@@ -2,8 +2,6 @@
 -- CATEGORIAS GNÓSTICAS
 -- =============================================
 
-USE `portal_saberes`;
-
 -- Categorias de Áudio
 INSERT INTO `categorias` (`nome`, `slug`, `descricao`, `icone`, `cor`, `ordem`) VALUES
 ('Gnose e Esoterismo', 'gnose-esoterismo', 'Conhecimento gnóstico, esoterismo e saberes ocultos antigos', 'bi bi-lightning-charge', '#9b59b6', 1),
