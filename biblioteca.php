@@ -239,6 +239,26 @@ ksort($todasTags);
 }
 .bib-item .bib-meta i { margin-right: 2px; }
 
+/* ── Filtros avançados (recolhido) ── */
+.filtros-avancados {
+    margin-bottom: 24px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+}
+.filtros-summary {
+    padding: 12px 18px; cursor: pointer; user-select: none; font-size: .9rem;
+    font-weight: 500; font-family: var(--font);
+    display: flex; align-items: center; gap: 8px;
+}
+.filtros-summary:hover { background: var(--bg3); }
+.filtros-body {
+    padding: 0 18px 18px;
+}
+.filtros-body .tag-cloud { margin-bottom: 0; }
+.filtros-body .biblioteca-axes { margin-bottom: 0; }
+details.filtros-avancados[open] .filtros-body {
+    animation: fadeIn .2s ease;
+}
+
 /* ── Animations ── */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
@@ -307,10 +327,10 @@ ksort($todasTags);
     <h1>📚 Biblioteca de Saberes</h1>
     <p>Todo o conhecimento do Portal Saberes Ancestrais organizado, filtrável e interativo.</p>
     <div class="biblioteca-stats">
-        <div class="stat-card"><div class="number" data-count="<?= $totalArtigos ?>">0</div><div class="label">Artigos</div></div>
-        <div class="stat-card"><div class="number" data-count="<?= $totalCategorias ?>">0</div><div class="label">Categorias</div></div>
-        <div class="stat-card"><div class="number" data-count="<?= $totalViews ?>">0</div><div class="label">Visualizações</div></div>
-        <div class="stat-card"><div class="number" data-count="<?= count($todasTags) ?>">0</div><div class="label">Tags</div></div>
+        <div class="stat-card"><div class="number"><?= number_format($totalArtigos, 0, ',', '.') ?></div><div class="label">Artigos</div></div>
+        <div class="stat-card"><div class="number"><?= number_format($totalCategorias, 0, ',', '.') ?></div><div class="label">Categorias</div></div>
+        <div class="stat-card"><div class="number"><?= number_format($totalViews, 0, ',', '.') ?></div><div class="label">Visualizações</div></div>
+        <div class="stat-card"><div class="number"><?= number_format(count($todasTags), 0, ',', '.') ?></div><div class="label">Tags</div></div>
     </div>
 </div>
 
@@ -350,34 +370,41 @@ $eixos = [
     <button class="toolbar-btn toolbar-btn-random" id="randomBtn">🎲 Aleatório</button>
 </div>
 
-<!-- Tag cloud -->
-<div class="tag-cloud" id="tagCloud">
-    <span class="tag-label">Tags:</span>
-    <button class="tag-pill active" data-tag="" id="tagAll">Todas <span class="count">(<?= count($todosArtigos) ?>)</span></button>
-    <?php foreach ($todasTags as $tag => $count): ?>
-    <button class="tag-pill" data-tag="<?= esc($tag) ?>">#<?= esc($tag) ?> <span class="count">(<?= $count ?>)</span></button>
-    <?php endforeach; ?>
-    <button class="tag-clear" id="tagClear" style="display:none">✕ limpar</button>
-</div>
-
 <!-- Result count -->
 <div class="result-count" id="resultCount">Mostrando <?= count($todosArtigos) ?> artigo<?= count($todosArtigos) !== 1 ? 's' : '' ?></div>
 
-<!-- Eixos -->
-<h2 style="margin-bottom:16px;font-size:1.3rem;">🔱 Eixos Temáticos</h2>
-<div class="biblioteca-axes" id="axisContainer">
-    <?php foreach ($eixos as $key => [$icon, $name, $desc, $cats]):
-        $count = 0;
-        foreach ($cats as $cs) $count += isset($artigosPorCategoria[$cs]) ? count($artigosPorCategoria[$cs]['artigos']) : 0;
-    ?>
-    <div class="axis-card" data-axis="<?= $key ?>" data-cats="<?= esc(implode(',', $cats)) ?>">
-        <div class="axis-icon"><?= $icon ?></div>
-        <h3><?= esc($name) ?></h3>
-        <p><?= esc($desc) ?></p>
-        <div class="axis-count"><?= $count ?> artigos</div>
+<!-- Filtros avançados (recolhido) -->
+<details class="filtros-avancados" id="filtrosAvancados">
+    <summary class="filtros-summary">🔍 Filtros avançados</summary>
+    <div class="filtros-body">
+
+    <!-- Tag cloud -->
+    <div class="tag-cloud" id="tagCloud">
+        <span class="tag-label">Tags:</span>
+        <button class="tag-pill active" data-tag="" id="tagAll">Todas <span class="count">(<?= count($todosArtigos) ?>)</span></button>
+        <?php foreach ($todasTags as $tag => $count): ?>
+        <button class="tag-pill" data-tag="<?= esc($tag) ?>">#<?= esc($tag) ?> <span class="count">(<?= $count ?>)</span></button>
+        <?php endforeach; ?>
+        <button class="tag-clear" id="tagClear" style="display:none">✕ limpar</button>
     </div>
-    <?php endforeach; ?>
-</div>
+
+    <!-- Eixos -->
+    <div class="biblioteca-axes" id="axisContainer">
+        <?php foreach ($eixos as $key => [$icon, $name, $desc, $cats]):
+            $count = 0;
+            foreach ($cats as $cs) $count += isset($artigosPorCategoria[$cs]) ? count($artigosPorCategoria[$cs]['artigos']) : 0;
+        ?>
+        <div class="axis-card" data-axis="<?= $key ?>" data-cats="<?= esc(implode(',', $cats)) ?>">
+            <div class="axis-icon"><?= $icon ?></div>
+            <h3><?= esc($name) ?></h3>
+            <p><?= esc($desc) ?></p>
+            <div class="axis-count"><?= $count ?> artigos</div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+    </div>
+</details>
 
 <!-- Catálogo -->
 <h2 style="margin-bottom:16px;font-size:1.3rem;">📖 Catálogo Completo</h2>
@@ -464,22 +491,6 @@ const ALL_ARTICLES = <?= json_encode(array_map(function($a) {
 }, $todosArtigos)) ?>;
 
 // ============================================================
-// STATS COUNTER ANIMATION
-// ============================================================
-document.querySelectorAll('[data-count]').forEach(el => {
-    const target = parseInt(el.dataset.count);
-    const duration = 800;
-    const start = performance.now();
-    function update(now) {
-        const pct = Math.min((now - start) / duration, 1);
-        el.textContent = Math.floor(pct * target).toLocaleString('pt-BR');
-        if (pct < 1) requestAnimationFrame(update);
-        else el.textContent = target.toLocaleString('pt-BR');
-    }
-    requestAnimationFrame(update);
-});
-
-// ============================================================
 // SEARCH (com debounce)
 // ============================================================
 const searchInput = document.getElementById('bibSearch');
@@ -556,6 +567,14 @@ function applySort() {
         items.forEach(item => grid.appendChild(item));
     });
 }
+
+// ============================================================
+// SORT LABEL
+// ============================================================
+const sortLabels = { recent: 'Recentes', title: 'A-Z', views: '+Vistos' };
+document.getElementById('sortSelect').addEventListener('change', function() {
+    applySort();
+});
 
 // ============================================================
 // VIEW TOGGLE (Grid / List)
@@ -636,8 +655,6 @@ function applyFilters() {
     document.getElementById('resultCount').textContent =
         `Mostrando ${visibleCount} artigo${visibleCount !== 1 ? 's' : ''}` +
         (visibleCount !== ALL_ARTICLES.length ? ` de ${ALL_ARTICLES.length}` : '');
-
-    applySort();
 }
 
 // ============================================================
